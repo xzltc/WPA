@@ -13,6 +13,7 @@ def func1(x):
     return 11 * m.sin(6 * x) + 7 * m.cos(5 * x)
 
 
+# 带两个参数的函数 二维
 def func2(X):
     if X.ndim == 1:
         X = np.reshape(X, (1,) + X.shape)
@@ -30,6 +31,7 @@ def func2(X):
     return res
 
 
+# 带六个参数函数 六维
 def func6(X):
     if X.ndim == 1:
         X = np.reshape(X, (1,) + X.shape)

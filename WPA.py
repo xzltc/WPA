@@ -3,6 +3,7 @@
 # @Author: XZL
 # @File : WPA.py
 # @Software: PyCharm
+import math as m
 import numpy as np
 import function
 import heapq
@@ -17,8 +18,8 @@ max_iteration = 300  # 最大迭代次数
 number_T = np.random.randint(wolf_num / (α + 1), wolf_num / α)  # 探狼数量
 
 # 待寻优变量的取值范围
-min_d = -10
-max_d = 10
+min_d = -200
+max_d = 200
 
 # 探狼探寻方向
 h_max = 15
@@ -37,7 +38,7 @@ wolf_colony_X = np.random.uniform(min_d, max_d, (wolf_num, Xsize))
 for it in range(0, max_iteration):
     print("------开始第 %d 次迭代--------" % (it + 1))
 
-    wolf_colony_V = function.func2(wolf_colony_X)
+    wolf_colony_V = function.func6(wolf_colony_X)
     # 初始化头狼
     L_Wolf_V = np.min(wolf_colony_V)
     L_Wolf_index = np.argmin(wolf_colony_V)
@@ -46,10 +47,10 @@ for it in range(0, max_iteration):
     print(" > 初始化头狼:%f" % L_Wolf_V)
     # 初始化探狼
     T_Wolf_V = heapq.nsmallest(number_T, wolf_colony_V.copy())
-    T_Wolf = function.find_index(T_Wolf_V, wolf_colony_V.tolist())  # 0:群中下标 1:解
+    T_Wolf = function.find_index(T_Wolf_V, wolf_colony_V.tolist())  # 0:探狼在狼群中位置 1:解
     # 初始化猛狼
     M_Wolf_V = heapq.nlargest(wolf_num - number_T - 1, wolf_colony_V.copy())
-    M_Wolf = function.find_index(M_Wolf_V, wolf_colony_V.tolist())  # 0:群中下标 1:解
+    M_Wolf = function.find_index(M_Wolf_V, wolf_colony_V.tolist())  # 0:探狼在狼群中位置 1:解
 
     # 探狼开始游走
     for i in range(0, T_Wolf.shape[0]):
@@ -65,11 +66,11 @@ for it in range(0, max_iteration):
             # 在初始位置朝H个方向试探，直到找到一个优解
             for p in range(1, H + 1):
                 single_T_Wolf_trial = single_T_Wolf.copy()
-                # single_T_Wolf_trial = single_T_Wolf_trial + m.cos(m.pi * p / H) * step_a
-                single_T_Wolf_trial = single_T_Wolf_trial + np.random.uniform(-1, 2,
+                # single_T_Wolf_trial = single_T_Wolf_trial + int(m.cos(m.pi * p / H)) * step_a
+                single_T_Wolf_trial = single_T_Wolf_trial + np.random.uniform(-1, 1,
                                                                               (single_T_Wolf_trial.shape[0],)) * step_a
 
-                single_T_Wolf_V = function.func2(single_T_Wolf_trial)[0]
+                single_T_Wolf_V = function.func6(single_T_Wolf_trial)[0]
 
                 # 探狼转变为头狼
                 if L_Wolf_V > single_T_Wolf_V:
@@ -87,7 +88,7 @@ for it in range(0, max_iteration):
                     optimum_position = single_T_Wolf_trial
 
             else:
-                print("探狼完成第%d游走,未找到猎物" % (t + 1))
+                print(" > 第%d只探狼完成第%d游走,未发现猎物" % ((i + 1), (t + 1)))
                 # 记录上次的最优位置
                 single_T_Wolf = optimum_position
 
@@ -102,7 +103,7 @@ for it in range(0, max_iteration):
             # 若游走完成探狼没找到猎物，更新所有游走过程中最优的一次位置
             wolf_colony_X[int(T_Wolf[i][0])] = optimum_position
 
-    d_near = (1 / ω) * Xsize * (max_d - min_d)  # dnear值，判定距离
+    d_near = (1 / (1 * ω)) * Xsize * (max_d - min_d)  # dnear值，判定距离
 
     # 召唤行为
     surrounded = False
@@ -117,7 +118,7 @@ for it in range(0, max_iteration):
 
             while d_near < dd:
                 single_M_Wolf = single_M_Wolf + step_b * (L_Wolf_X - single_M_Wolf) / np.abs(L_Wolf_X - single_M_Wolf)
-                single_M_Wolf_V = function.func2(single_M_Wolf)[0]
+                single_M_Wolf_V = function.func6(single_M_Wolf)[0]
 
                 # 更新猛狼位置
                 wolf_colony_X[s_m_index] = single_M_Wolf
@@ -155,7 +156,7 @@ for it in range(0, max_iteration):
         single_M_Wolf = wolf_colony_X[s_m_index]
         # 发起围攻，计算围攻后位置
         single_M_Wolf = single_M_Wolf + np.random.uniform(-1, 1) * step_c * np.abs(L_Wolf_X - single_M_Wolf)
-        single_M_Wolf_V = function.func2(single_M_Wolf)[0]
+        single_M_Wolf_V = function.func6(single_M_Wolf)[0]
 
         if L_Wolf_V > single_M_Wolf_V:
             print(" > 发起围攻!目标更新 原值:%f 现值:%f" % (L_Wolf_V, single_M_Wolf_V))
@@ -172,7 +173,7 @@ for it in range(0, max_iteration):
     print(" > 围攻完成")
 
     # 强者生存行为
-    wolf_colony_V = function.func2(wolf_colony_X)  # 重新计算现在所有狼狩猎的状态
+    wolf_colony_V = function.func6(wolf_colony_X)  # 重新计算现在所有狼狩猎的状态
     eliminate_number = np.random.randint(wolf_num / (2 * β), wolf_num / β)
     Bad_Wolf_V = heapq.nlargest(eliminate_number, wolf_colony_V.copy())
     Bad_Wolf = function.find_index(Bad_Wolf_V, wolf_colony_V.tolist())

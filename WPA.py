@@ -31,14 +31,16 @@ def WPA_pipline():
     step_b = 2 * step_a  # 猛狼奔袭步长
     step_c = step_a / 2  # 围攻步长
 
-    Xsize = 6  # 维度(方程的参数维度)
+    load_funtion = function.func6  # 加载单个方程，替换方程需要修改此处方法调用
+
+    Xsize = 6  # 维度(方程的参数个数)
 
     # 初始化狼群以及计算猎物浓度(取值范围均匀分布)
     wolf_colony_X = np.random.uniform(min_d, max_d, (wolf_num, Xsize))
 
     # 迭代 每次迭代都是完整一次狼群行为
     for it in range(0, max_iteration):
-        print("------开始第 %d 次迭代--------" % (it + 1))
+        print("----------------------------开始第 %d 次迭代--------------------------" % (it + 1))
 
         wolf_colony_V = function.func6(wolf_colony_X)
         # 初始化头狼
@@ -91,7 +93,7 @@ def WPA_pipline():
                         optimum_position = single_T_Wolf_trial
 
                 else:
-                    print(" > 第%d只探狼完成第%d游走,未发现猎物" % ((i + 1), (t + 1)))
+                    print(" > 第%d只探狼完成第%d次游走,未发现猎物" % ((i + 1), (t + 1)))
                     # 记录上次的最优位置
                     single_T_Wolf = optimum_position
 
@@ -160,10 +162,10 @@ def WPA_pipline():
             single_M_Wolf = wolf_colony_X[s_m_index]
             # 发起围攻，计算围攻后位置
             single_M_Wolf = single_M_Wolf + np.random.uniform(-1, 1) * step_c * np.abs(L_Wolf_X - single_M_Wolf)
-            single_M_Wolf_V = function.func6(single_M_Wolf)[0]
+            single_M_Wolf_V = load_funtion(single_M_Wolf)[0]
 
             if L_Wolf_V > single_M_Wolf_V:
-                print(" > 发起围攻!目标更新 原值:%f 现值:%f" % (L_Wolf_V, single_M_Wolf_V))
+                print(" > 发起围攻!目标更新   原值:%f => 现值:%f" % (L_Wolf_V, single_M_Wolf_V))
                 # 头狼变猛狼
                 M_Wolf[m][0] = L_Wolf_index
                 M_Wolf[m][1] = L_Wolf_V
@@ -177,7 +179,7 @@ def WPA_pipline():
         print(" > 围攻完成")
 
         # 强者生存行为
-        wolf_colony_V = function.func6(wolf_colony_X)  # 重新计算现在所有狼狩猎的状态
+        wolf_colony_V = load_funtion(wolf_colony_X)  # 重新计算现在所有狼狩猎的状态
         eliminate_number = np.random.randint(wolf_num / (2 * β), wolf_num / β)
         Bad_Wolf_V = heapq.nlargest(eliminate_number, wolf_colony_V.copy())
         Bad_Wolf = function.find_index(Bad_Wolf_V, wolf_colony_V.tolist())
